@@ -26,18 +26,9 @@ transaction_data = transaction_data[['FLAG', 'Avg min between sent tnx',\
     'total ether sent contracts',\
     'total ether balance'
     ]]
+
+
 transaction_data = transaction_data.sample(frac=1).reset_index(drop=True)
-transaction_data['total ether balance'] = preprocessing.normalize(transaction_data['total ether balance'], norm='l2')
-transaction_data['total ether sent contracts'] = preprocessing.normalize(transaction_data['total ether sent contracts'], norm='l2')
-transaction_data['total ether received'] = preprocessing.normalize(transaction_data['total ether received'], norm='l2')
-transaction_data['total Ether sent'] = preprocessing.normalize(transaction_data['total Ether sent'], norm='l2')
-transaction_data['avg val sent'] = preprocessing.normalize(transaction_data['avg val sent'], norm='l2')
-transaction_data['max val sent'] = preprocessing.normalize(transaction_data['max val sent'], norm='l2')
-transaction_data['min val sent'] = preprocessing.normalize(transaction_data['min val sent'], norm='l2')
-transaction_data['avg val received'] = preprocessing.normalize(transaction_data['avg val received'], norm='l2')
-transaction_data['max value received'] = preprocessing.normalize(transaction_data['max value received'], norm='l2')
-transaction_data['avg val received'] = preprocessing.normalize(transaction_data['avg val received'], norm='l2')
-transaction_data['min value received'] = preprocessing.normalize(transaction_data['min value received'], norm='l2')
 
 
 train, test = train_test_split(transaction_data, test_size=0.2)
@@ -82,6 +73,10 @@ test_features = test[['Avg min between sent tnx',\
     'total ether sent contracts',\
     'total ether balance'
     ]].to_numpy()
+
+
+train_features = preprocessing.normalize(train_features, norm='l2')
+test_features = preprocessing.normalize(test_features, norm='l2')
 clf = LogisticRegression(random_state=0).fit(train_features, train_targets)
 print(clf.score(test_features, test_targets))
 #for x, y in zip(test_features, test_targets):
