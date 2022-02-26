@@ -82,7 +82,7 @@ def main():
     n1 = 0
     block = Utils.queryMostRecentBlock().json()
     for trans in block['Transactions']:
-        
+
         if trans['TransactionType'] == 'BASIC_TRANSFER':
             n1 = n1 + 1
             print(trans)
@@ -103,13 +103,12 @@ def main():
                 n = n + 1
             avg_received = sum_received / n
 
-<<<<<<< HEAD
             total_sent = trans['TransactionMetadata']['BasicTransferTxindexMetadata']['TotalInputNanos']
             total_received = trans['TransactionMetadata']['BasicTransferTxindexMetadata']['TotalOutputNanos']
             balance = total_received - total_sent + trans['TransactionMetadata']['BasicTransferTxindexMetadata']['FeeNanos']
             x = [sent_tnx, received_tnx, min_received, max_received, avg_received, min_sent, max_sent, sum_sent/ n1, total_sent, total_received, balance]
             print(run_model(x))
-=======
+'''
     # Track up the chain, and parse data for each user
     for pKeys in userHashes.keys():
 
@@ -118,6 +117,8 @@ def main():
     print(userHashes)
 
 >>>>>>> c6817ca42e1ec8c5c38b00d9fc6af7ae469f8009
+'''
+
 '''
 block = Utils.queryMostRecentBlock().json()
 transactions = block['Transactions']
