@@ -5,7 +5,7 @@ from utils.Utils import Utils
 import deso
 from sklearn import preprocessing
 import pickle
-import json 
+import json
 with open('model.pkl', 'rb') as f:
     clf2 = pickle.load(f)
 
@@ -29,6 +29,7 @@ def main():
     userHashes = {}
     n=5
     results = {}
+    ''' example usage
     # Get each block and parse info here
     for i in range(maxHeight-n, maxHeight):
         try:
@@ -75,6 +76,7 @@ def main():
                     userHashes[curK] = [ak['Metadata']]
                 else:
                     userHashes[curK].append(ak['Metadata'])
+    '''
     import math
     block = Utils.queryMostRecentBlock().json()
     for trans in block['Transactions']:
@@ -102,7 +104,7 @@ def main():
                 min_sent = min(min_sent, out['AmountNanos'])
                 max_sent = max(max_sent, out['AmountNanos'])
                 sum_sent = sum_sent + out['AmountNanos']
-                n = n + 1
+                n += 1
             avg_sent = sum_sent / n
 
             total_sent = trans['TransactionMetadata']['BasicTransferTxindexMetadata']['TotalInputNanos']
@@ -110,9 +112,9 @@ def main():
             balance = total_received - total_sent + trans['TransactionMetadata']['BasicTransferTxindexMetadata']['FeeNanos']
             x = [sent_tnx, received_tnx, min_received/1e9, max_received/1e9, average_received/1e9, min_sent/1e9, max_sent/1e9, avg_sent/1e9, total_sent/1e9, total_received/1e9, balance/1e9]
             results[str(trans)] = [x, run_model(x)]
-    return results
+    print(results)
 
 if __name__ == "__main__":
-    print(main())
+    main()
 
 
