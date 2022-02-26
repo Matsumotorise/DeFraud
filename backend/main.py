@@ -78,9 +78,6 @@ def main():
     import math
     block = Utils.queryMostRecentBlock().json()
     for trans in block['Transactions']:
-        #print(trans['TransactionType'])
-        #for users in trans['TransactionMetadata']['TxnOutputs']:
-        #    print(Utils.queryProfile(users['PublicKey']))
         if trans['TransactionType'] == 'BASIC_TRANSFER':
             max_received = -math.inf
             min_received = math.inf
@@ -114,6 +111,8 @@ def main():
             x = [sent_tnx, received_tnx, min_received/1e9, max_received/1e9, average_received/1e9, min_sent/1e9, max_sent/1e9, avg_sent/1e9, total_sent/1e9, total_received/1e9, balance/1e9]
             print(x)
             print(run_model(x))
+'''
+
 '''
 block = Utils.queryMostRecentBlock().json()
 transactions = block['Transactions']
