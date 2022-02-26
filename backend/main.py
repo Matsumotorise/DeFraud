@@ -1,8 +1,7 @@
 #!/usr/bin/env python
+import sys
+print(sys.path)
 from utils.Utils import Utils
-
-
-#print(Utils.queryMostRecentBlock())
 
 def main():
     # Make a call to the Dezos chain and retrieves N most recent blocks
@@ -42,6 +41,11 @@ def main():
 
     print(userHashes)
 
+'''
+block = Utils.queryMostRecentBlock().json()
+transactions = block['Transactions']
+print(transactions[0])
+'''
 
 
 
