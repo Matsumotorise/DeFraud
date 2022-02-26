@@ -5,7 +5,7 @@ from utils.Utils import Utils
 import deso
 from sklearn import preprocessing
 import pickle
-
+import json 
 with open('model.pkl', 'rb') as f:
     clf2 = pickle.load(f)
 
@@ -28,7 +28,7 @@ def main():
 
     userHashes = {}
     n=5
-
+    results = {}
     # Get each block and parse info here
     for i in range(maxHeight-n, maxHeight):
         try:
@@ -109,19 +109,10 @@ def main():
             total_received = trans['TransactionMetadata']['BasicTransferTxindexMetadata']['TotalOutputNanos']
             balance = total_received - total_sent + trans['TransactionMetadata']['BasicTransferTxindexMetadata']['FeeNanos']
             x = [sent_tnx, received_tnx, min_received/1e9, max_received/1e9, average_received/1e9, min_sent/1e9, max_sent/1e9, avg_sent/1e9, total_sent/1e9, total_received/1e9, balance/1e9]
-            print(x)
-            print(run_model(x))
-'''
-
-'''
-block = Utils.queryMostRecentBlock().json()
-transactions = block['Transactions']
-print(transactions[0])
-'''
-
-
+            results[str(trans)] = [x, run_model(x)]
+    return results
 
 if __name__ == "__main__":
-    main()
+    print(main())
 
 
