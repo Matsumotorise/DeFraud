@@ -23,7 +23,9 @@ def main():
     # Make a call to the Dezos chain and retrieves N most recent blocks
     maxHeight = Utils.queryMostRecentBlock().json()['Header']['Height']
 
-    # End up with a list of Publickey : [eventType1, eventType2, ...]
+    # End up with a list of Publickey : [t1, t2, ...]
+    # Where t1, t2, ... are transactions of the form {time, transferAmt, transactionKey, to/fromKey} (If transferAmt positive, then it's fromKey, if negative, it's toKey)
+
     userHashes = {}
     n=5
 
@@ -34,20 +36,39 @@ def main():
         except:
             print(f"WARN: something went wrong trying to query block {i}")
             continue
+
+        header = Utils.safeMapAccess(data, 'Header')
+        if header == None:
+            print(f"WARN: something went wrong trying to query block {i} @header")
+            continue
+
+        time = Utils.safeMapAccess(header, 'TstampSecs')
+        if time == None:
+            print(f"WARN: something went wrong trying to query block {i} @Time")
+            continue
+
+        #(TODO: )
+        # Where t1, t2, ... are transactions of the form dict{time, transferAmt, transactionKey, to/fromKey} (If transferAmt positive, then it's fromKey, if negative, it's toKey)
+        # Having an issue identifying to/from with transaction data alone
+        t = {"time" : time}
+
         # Extract public hashes out of blocks
         transactions = Utils.safeMapAccess(data, 'Transactions')
         if transactions == None:
             print(f"WARN: something went wrong trying to query block {i} @Transactions")
             continue
+
         for t in transactions:
             metaData = Utils.safeMapAccess(t, 'TransactionMetadata')
             if(metaData == None):
                 print(f"WARN: something went wrong trying to query block {i} @Metadata")
                 continue
+
             affectedKeys = Utils.safeMapAccess(metaData, 'AffectedPublicKeys')
             if(affectedKeys == None):
                 print(f"WARN: something went wrong trying to query block {i} @AffectedKeys")
                 continue
+
             for ak in affectedKeys:
                 curK = ak['PublicKeyBase58Check']
                 if curK not in userHashes:
@@ -82,11 +103,21 @@ def main():
                 n = n + 1
             avg_received = sum_received / n
 
+<<<<<<< HEAD
             total_sent = trans['TransactionMetadata']['BasicTransferTxindexMetadata']['TotalInputNanos']
             total_received = trans['TransactionMetadata']['BasicTransferTxindexMetadata']['TotalOutputNanos']
             balance = total_received - total_sent + trans['TransactionMetadata']['BasicTransferTxindexMetadata']['FeeNanos']
             x = [sent_tnx, received_tnx, min_received, max_received, avg_received, min_sent, max_sent, sum_sent/ n1, total_sent, total_received, balance]
             print(run_model(x))
+=======
+    # Track up the chain, and parse data for each user
+    for pKeys in userHashes.keys():
+
+
+
+    print(userHashes)
+
+>>>>>>> c6817ca42e1ec8c5c38b00d9fc6af7ae469f8009
 '''
 block = Utils.queryMostRecentBlock().json()
 transactions = block['Transactions']
