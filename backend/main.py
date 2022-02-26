@@ -76,48 +76,44 @@ def main():
                 else:
                     userHashes[curK].append(ak['Metadata'])
     import math
-    max_sent = -math.inf
-    min_sent = math.inf
-    sum_sent = 0
-    n1 = 0
     block = Utils.queryMostRecentBlock().json()
     for trans in block['Transactions']:
-        
+        #print(trans['TransactionType'])
+        #for users in trans['TransactionMetadata']['TxnOutputs']:
+        #    print(Utils.queryProfile(users['PublicKey']))
         if trans['TransactionType'] == 'BASIC_TRANSFER':
-            n1 = n1 + 1
-            print(trans)
-            sum_sent = sum_sent + trans['Outputs'][0]['AmountNanos']
-            min_sent = min(min_sent, trans['Outputs'][0]['AmountNanos'])
-            max_sent = max(max_sent, trans['Outputs'][0]['AmountNanos'])
+            max_received = -math.inf
+            min_received = math.inf
+            average_received = 0
+            n1 = 0
+            for input_transaction in trans['Inputs']:
+                input_trans = Utils.getTransaction(input_transaction['TransactionIDBase58Check'])
+                max_received = max(max_received, input_trans['BasicTransferTxindexMetadata']['TotalOutputNanos'])
+                min_received = min(min_received, input_trans['BasicTransferTxindexMetadata']['TotalOutputNanos'])
+                average_received = average_received + input_trans['BasicTransferTxindexMetadata']['TotalOutputNanos']
+                n1 = n1 + 1
+            average_received = average_received / n1
+
             sent_tnx = len(trans['Inputs'])
             received_tnx = len(trans['Outputs'])
-            import math
-            min_received = math.inf
-            max_received = -math.inf
-            sum_received = 0
-            n = 0
-            for out in trans['Outputs'][1:]:
-                min_received = min(min_received, out['AmountNanos'])
-                max_received = max(max_received, out['AmountNanos'])
-                sum_received = sum_received + out['AmountNanos']
-                n = n + 1
-            avg_received = sum_received / n
 
-<<<<<<< HEAD
+            sum_sent = 0
+            min_sent = math.inf
+            max_sent = -math.inf
+            n = 0
+            for out in trans['Outputs']:
+                min_sent = min(min_sent, out['AmountNanos'])
+                max_sent = max(max_sent, out['AmountNanos'])
+                sum_sent = sum_sent + out['AmountNanos']
+                n = n + 1
+            avg_sent = sum_sent / n
+
             total_sent = trans['TransactionMetadata']['BasicTransferTxindexMetadata']['TotalInputNanos']
             total_received = trans['TransactionMetadata']['BasicTransferTxindexMetadata']['TotalOutputNanos']
             balance = total_received - total_sent + trans['TransactionMetadata']['BasicTransferTxindexMetadata']['FeeNanos']
-            x = [sent_tnx, received_tnx, min_received, max_received, avg_received, min_sent, max_sent, sum_sent/ n1, total_sent, total_received, balance]
+            x = [sent_tnx, received_tnx, min_received/1e9, max_received/1e9, average_received/1e9, min_sent/1e9, max_sent/1e9, avg_sent/1e9, total_sent/1e9, total_received/1e9, balance/1e9]
+            print(x)
             print(run_model(x))
-=======
-    # Track up the chain, and parse data for each user
-    for pKeys in userHashes.keys():
-
-
-
-    print(userHashes)
-
->>>>>>> c6817ca42e1ec8c5c38b00d9fc6af7ae469f8009
 '''
 block = Utils.queryMostRecentBlock().json()
 transactions = block['Transactions']
