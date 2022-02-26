@@ -5,7 +5,10 @@ from utils.Utils import Utils
 
 block = Utils.queryMostRecentBlock().json()
 transactions = block['Transactions']
-print(transactions[0])
+for transaction in transactions:
+    if transaction['TransactionType'] == 'BASIC_TRANSFER':
+        print(transaction['Outputs'][0]['PublicKeyBase58Check'])
+        print(Utils.queryProfile(transaction['Outputs'][0]['PublicKeyBase58Check']))
 
 
 
