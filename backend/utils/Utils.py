@@ -5,7 +5,7 @@ API_HEADER = {"Content-Type": "application/json; charset=utf-8"}
 
 
 class Utils:
-    # Post request to get block at height h
+    # Post request to get block at height or blockHash h
     @staticmethod
     def queryBlock(h):
         payload = {"Height": h, "FullBlock": True,}
@@ -22,6 +22,7 @@ class Utils:
     def queryMostRecentBlock():
         return requests.get(API_URL)
 
+    # Returns None if it's not safe to access, else the value
     @staticmethod
     def safeMapAccess(m, k):
         if k in m:
