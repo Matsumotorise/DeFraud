@@ -10,7 +10,7 @@
 # Deployment
 
 ## For webapp
-* Unzip webapp: https://drive.google.com/file/d/1vCnB2SXaZybu9Gg7yjs4OJGBaYTFme1N/view?usp=sharing
+* Unzip webapp in project directory: https://drive.google.com/file/d/1vCnB2SXaZybu9Gg7yjs4OJGBaYTFme1N/view?usp=sharing
 * npm install
 * python ./backend/testFlask.py
 
