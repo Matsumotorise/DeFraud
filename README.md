@@ -1,4 +1,4 @@
-# Python script for  ...
+# Defraud project for Deso blockchain
 
 ## Prerequesites
 * Node
