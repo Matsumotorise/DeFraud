@@ -23,14 +23,53 @@ def run_model(x):
     return clf2.predict(f)
 
 # Returns {PubKeys[], Usernames[], ProfilePictures[]}
-@app.route('/transactionDetails')
+@app.route('/transactionDetails', methods = ['POST'])
 def transactionDetails():
     results = {}
-    tnxKey = int(request.values.get('transactionKey'))
+    tnxKey = request.values.get('transactionKey')
 
-    input_trans = Utils.queryUserTransaction(tnxKey).json()
-    input_trans = input_trans['Transactions'][0]
-    print(input_trans)
+    results = {}
+    results['Pkeys'] = []
+    results['Usernames'] = []
+    results['ProfilePicURL'] = []
+    trans = Utils.queryUserTransaction(tnxKey).json()
+
+    input_trans = trans["Transactions"][0]["Inputs"]
+    output_trans = trans["Transactions"][0]["Outputs"]
+
+    '''
+    for inp in input_trans:
+        results['Pkeys'].append(inp["PublicKeyBase58Check"])
+    '''
+
+    for out in output_trans:
+        results['Pkeys'].append(out["PublicKeyBase58Check"])
+
+    print(results['Pkeys'])
+    i = 0
+    n = len(results['Pkeys'])
+    while i < n:
+        pKey = results['Pkeys'][i]
+        print(i,n)
+        try:
+            x=deso.Users.getSingleProfile(pKey)
+            print(x)
+            if('error' in x):
+                results['Pkeys'].pop(i)
+                n-=1
+                continue
+            print("--------------", x)
+            x=x['Profile']['Username']
+            print(x)
+            results['Usernames'].append(x)
+            results['ProfilePicURL'].append(deso.Users.getProfilePic(pKey))
+            i+=1
+        except Exception as e:
+            print(e)
+            i+=1
+            continue
+    return results
+
 
 
 
