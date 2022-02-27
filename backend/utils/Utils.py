@@ -7,20 +7,19 @@ import json
 API_URL = "https://node.deso.org/api/v1"
 API_HEADER = {"Content-Type": "application/json; charset=utf-8"}
 
-
 class Utils:
-
     # Post request to get block at height or blockHash h
     @staticmethod
     def queryBlock(h):
         payload = {"Height": h, "FullBlock": True,}
         return requests.post(f"{API_URL}/block", headers=API_HEADER, json=payload)
 
-    # Gets user's transactions
+    # Gets user's transactions or transactionIdx query
     @staticmethod
     def queryUserTransaction(pubKey):
-        return deso.Users.getTransactionInfo(publicKey=pubKey)
-        #return requests.post(f"{API_URL}/transaction-info", headers=API_HEADER, json=payload)
+        #return deso.Users.getTransactionInfo(publicKey=pubKey)
+        payload = {"TransactionIDBase58Check": pubKey,}
+        return requests.post(f"{API_URL}/transaction-info", headers=API_HEADER, json=payload)
 
     @staticmethod
     async def _getTransaction(transaction_id):
@@ -36,16 +35,18 @@ class Utils:
 
     @staticmethod
     def getTransaction(transaction_id):
+        transaction_id
         content = asyncio.get_event_loop().run_until_complete(Utils._getTransaction(transaction_id))
         content = content[content.find('Raw Metadata'):]
         content = content[content.find('{'):content.find('</pre>')]
         return json.loads(content)
+
     @staticmethod
     def queryProfile(pubKey):
         prof = deso.Users.getSingleProfile(pubKey)
         #print(prof['Profile'])
         return deso.Users.getTransactionInfo(publicKey=pubKey)
-        
+
     # Gets the most recent block (useful for getting height of most recent)
     @staticmethod
     def queryMostRecentBlock():
@@ -57,4 +58,9 @@ class Utils:
         if k in m:
             return m[k]
         return None
+
+    # User profile pub key
+    @staticmethod
+    def getProfilePicture(pubKey):
+        return userdeso.Users.getProfilePic(pubKey)
 

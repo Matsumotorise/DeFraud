@@ -1,14 +1,20 @@
 #!/usr/bin/env python
-import deso
 import math
 import pprint
 import sys
 from utils.Utils import Utils
+import deso
 from sklearn import preprocessing
 import pickle
 import json
 
-print(sys.path)
+from flask import Flask, jsonify, render_template, request
+app = Flask(__name__)
+
+
+# Things needed:
+# Search functionality
+
 with open('model.pkl', 'rb') as f:
     clf2 = pickle.load(f)
 
@@ -16,42 +22,24 @@ def run_model(x):
     f = preprocessing.normalize([x], norm='l2')
     return clf2.predict(f)
 
-def main2():
-    block = Utils.queryMostRecentBlock().json()
-    transactions = block['Transactions']
-    for transaction in transactions:
-        #print(transaction)
-        Utils.queryProfile(transaction['Outputs'][0]['PublicKeyBase58Check'])
-
-
-def transactionDetails(tnxKey):
+# Returns {PubKeys[], Usernames[], ProfilePictures[]}
+@app.route('/transactionDetails')
+def transactionDetails():
     results = {}
-    results['Pkeys'] = []
-    results['Usernames'] = []
-    results['ProfPicURL'] = []
-    trans = Utils.queryUserTransaction(tnxKey).json()
-    input_trans = trans["Transactions"]["Inputs"]
-    output_trans = trans["Transactions"]["Outputs"]
-    '''
-    for inp in input_trans:
-        results['Pkeys'].append(inp["PublicKeyBase58Check"])
-    '''
+    tnxKey = int(request.values.get('transactionKey'))
 
-    for out in output_trans:
-        results['Pkeys'].append(out["PublicKeyBase58Check"])
-
-    for pKey in results['Pkeys']:
-        try:
-            x=deso.Users.getSingleProfile(pKey)['Profile']['Username']
-            results['Usernames'].append(x)
-            results['ProfilePicURL'].append(deso.Users.getProfilePic(pKey))
-        except:
-            continue
-    return results
+    input_trans = Utils.queryUserTransaction(tnxKey).json()
+    input_trans = input_trans['Transactions'][0]
+    print(input_trans)
 
 
-# n int
-def main(n):
+
+
+
+# int depth
+@app.route("/blockDetails/", methods = ['POST'])
+def blockDetails():
+    n = int(request.values.get('depth'))
     results = {}
 
     block = Utils.queryMostRecentBlock().json()
@@ -93,11 +81,14 @@ def main(n):
             total_received = trans['TransactionMetadata']['BasicTransferTxindexMetadata']['TotalOutputNanos']
             balance = total_received - total_sent + trans['TransactionMetadata']['BasicTransferTxindexMetadata']['FeeNanos']
             x = [sent_tnx, received_tnx, min_received/1e9, max_received/1e9, average_received/1e9, min_sent/1e9, max_sent/1e9, avg_sent/1e9, total_sent/1e9, total_received/1e9, balance/1e9]
-            results[tID] = [timeStamp, run_model(x)]
+            print(run_model(x)[0])
+            results[tID] = {"timeStamp":timeStamp, "susFlag":int(run_model(x)[0])}
     print(results)
-    return results
-
-if __name__ == "__main__":
-    print(transactionDetails("3JuETDb8fDqmttC9HXw4bTwv2gbTTzYCpbArpuWb4iFt5EQuyr62xf"))
+    return jsonify(results)
 
 
+
+
+
+if __name__ == '__main__':
+   app.run()
