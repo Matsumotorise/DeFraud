@@ -20,7 +20,7 @@ with open('model.pkl', 'rb') as f:
 
 def run_model(x):
     f = preprocessing.normalize([x], norm='l2')
-    return clf2.predict(f)
+    return clf2.predict(f), clf2.predict_proba(f)
 
 def main2():
     block = Utils.queryMostRecentBlock().json()
@@ -117,7 +117,8 @@ def main(n):
             total_received = trans['TransactionMetadata']['BasicTransferTxindexMetadata']['TotalOutputNanos']
             balance = total_received - total_sent + trans['TransactionMetadata']['BasicTransferTxindexMetadata']['FeeNanos']
             x = [sent_tnx, received_tnx, min_received/1e9, max_received/1e9, average_received/1e9, min_sent/1e9, max_sent/1e9, avg_sent/1e9, total_sent/1e9, total_received/1e9, balance/1e9]
-            results[tID] = [timeStamp, run_model(x)]
+            resC, resX = run_model(x)
+            results[tID] = [timeStamp, resC, resX]
     #print(results)
     return results
 
@@ -137,7 +138,7 @@ from pynput.keyboard import Controller as Keyboard
 def post(s):
     mouse = Controller()
     keyboard = Keyboard()
-    mouse.position = (1470, 666)
+    mouse.position = (1470, 700)
     mouse.click(Button.left, 1)
     mouse.position = (1196, 416)
     mouse.click(Button.left, 1)
@@ -145,7 +146,7 @@ def post(s):
     mouse.position = (1196, 416)
     mouse.click(Button.left, 1)
     time.sleep(1)
-    mouse.position = (1400, 510)
+    mouse.position = (1400, 530)
     mouse.click(Button.left, 1)
     #for i in range(10):
     #    mouse.position = (1400, 416 + 5 * i)
@@ -153,18 +154,27 @@ def post(s):
 if __name__ == "__main__":
     posted = set()
     while True:
-        transactions = main(0)
-        for t in transactions.keys():
-            if transactions[t][1] == 0:
-                s = ''
-                for user in transactionDetails(t)['Usernames']:
-                    s = s + user+', '
-                if 'Possible fradulent transaction in $DESO Blockchain: Transaction ID:'+t not in posted:
-                    print('Possible fradulent transaction in $DESO Blockchain: Transaction ID:', t)
-                    post('Possible fradulent transaction in $DESO Blockchain: Transaction ID:' + t + ' Participants: '+ s)
-                    posted.add('Possible fradulent transaction in $DESO Blockchain: Transaction ID:' + t)
-                time.sleep(3)
-        time.sleep(10)
+        try:
+            transactions = main(0)
+            for t in transactions.keys():
+                if transactions[t][1] == 1:
+                    s = ''
+                    for user in transactionDetails(t)['Usernames']:
+                        s = s + user+', '
+                    if 'Possible fradulent transaction in $DESO Blockchain: Transaction ID:'+t not in posted:
+                        print('Possible fradulent transaction in $DESO Blockchain: Transaction ID:', t)
+                        print(transactions[t][2])
+                        print(transactions[t][1])
+                        post('Possible fraudulent transaction in $DESO Blockchain: Transaction ID:' + t + ' Participants: '+ s[:-2] + ' Confidence: '+str(int(transactions[t][2][0][1]*100))+'%')
+                        posted.add(t)
+                    time.sleep(3)
+                else:
+                    if t not in posted:
+                        posted.add(t)
+                        print('Not fraudulent')
+            time.sleep(10)
+        except KeyError:
+            pass
     #print(transactionDetails("3JuETDb8fDqmttC9HXw4bTwv2gbTTzYCpbArpuWb4iFt5EQuyr62xf"))
 
 
