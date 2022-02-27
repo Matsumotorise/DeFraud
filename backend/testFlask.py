@@ -72,20 +72,30 @@ def transactionDetails():
 
 
 
+@app.route("/try/", methods = ['GET'])
+def getTry():
 
+    resp = jsonify({"hello": "world"})
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp
 
 
 # int depth
 @app.route("/blockDetails/", methods = ['POST'])
 def blockDetails():
-    n = int(request.values.get('depth'))
-    results = {}
+    try:
+      n = int(request.values.get('depth'))
+    except:
+      n = 0
+
+    results = []
 
     block = Utils.queryMostRecentBlock().json()
     # Get offset if necessary
     if n != 0:
         block = Utils.queryBlock(block["Header"]["Height"]-n).json()
     timeStamp = block["Header"]["TstampSecs"]
+    count = 0
     for trans in block['Transactions']:
         if trans['TransactionType'] == 'BASIC_TRANSFER':
             max_received = -math.inf
@@ -121,9 +131,12 @@ def blockDetails():
             balance = total_received - total_sent + trans['TransactionMetadata']['BasicTransferTxindexMetadata']['FeeNanos']
             x = [sent_tnx, received_tnx, min_received/1e9, max_received/1e9, average_received/1e9, min_sent/1e9, max_sent/1e9, avg_sent/1e9, total_sent/1e9, total_received/1e9, balance/1e9]
             print(run_model(x)[0])
-            results[tID] = {"timeStamp":timeStamp, "susFlag":int(run_model(x)[0])}
+            results.append( {"id":count, "tnxID":tID, "timeStamp":timeStamp, "susFlag":int(run_model(x)[0])} )
+            count+=1
     print(results)
-    return jsonify(results)
+    resp = jsonify({"keys": results})
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp
 
 
 
