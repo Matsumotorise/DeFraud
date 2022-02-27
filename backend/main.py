@@ -7,6 +7,12 @@ from utils.Utils import Utils
 from sklearn import preprocessing
 import pickle
 import json
+import requests
+import deso
+import time
+import asyncio
+from pyppeteer import launch
+import json
 
 print(sys.path)
 with open('model.pkl', 'rb') as f:
@@ -42,27 +48,27 @@ def transactionDetails(tnxKey):
     for out in output_trans:
         results['Pkeys'].append(out["PublicKeyBase58Check"])
 
-    print(results['Pkeys'])
+    #print(results['Pkeys'])
     i = 0
     n = len(results['Pkeys'])
     while i < n:
         pKey = results['Pkeys'][i]
-        print(i,n)
+        #print(i,n)
         try:
             x=deso.Users.getSingleProfile(pKey)
-            print(x)
+            #print(x)
             if('error' in x):
                 results['Pkeys'].pop(i)
                 n-=1
                 continue
-            print("--------------", x)
+            #print("--------------", x)
             x=x['Profile']['Username']
-            print(x)
+            #print(x)
             results['Usernames'].append(x)
             results['ProfilePicURL'].append(deso.Users.getProfilePic(pKey))
             i+=1
         except Exception as e:
-            print(e)
+            #print(e)
             i+=1
             continue
     return results
@@ -112,10 +118,53 @@ def main(n):
             balance = total_received - total_sent + trans['TransactionMetadata']['BasicTransferTxindexMetadata']['FeeNanos']
             x = [sent_tnx, received_tnx, min_received/1e9, max_received/1e9, average_received/1e9, min_sent/1e9, max_sent/1e9, avg_sent/1e9, total_sent/1e9, total_received/1e9, balance/1e9]
             results[tID] = [timeStamp, run_model(x)]
-    print(results)
+    #print(results)
     return results
 
+async def post_it(s):
+        url = f"https://www.diamondapp.com"
+        browser = await launch()
+        page = await browser.newPage()
+        await page.goto(url)
+        time.sleep(5)
+        await page.screenshot({'path': 'example.png'})
+        content = await page.content()
+        await browser.close()
+        return content
+
+from pynput.mouse import Button, Controller
+from pynput.keyboard import Controller as Keyboard
+def post(s):
+    mouse = Controller()
+    keyboard = Keyboard()
+    mouse.position = (1470, 666)
+    mouse.click(Button.left, 1)
+    mouse.position = (1196, 416)
+    mouse.click(Button.left, 1)
+    keyboard.type(s)
+    mouse.position = (1196, 416)
+    mouse.click(Button.left, 1)
+    time.sleep(1)
+    mouse.position = (1400, 510)
+    mouse.click(Button.left, 1)
+    #for i in range(10):
+    #    mouse.position = (1400, 416 + 5 * i)
+    #    mouse.click(Button.left, 1)
 if __name__ == "__main__":
-    print(transactionDetails("3JuETDb8fDqmttC9HXw4bTwv2gbTTzYCpbArpuWb4iFt5EQuyr62xf"))
+    posted = set()
+    while True:
+        transactions = main(0)
+        for t in transactions.keys():
+            if transactions[t][1] == 0:
+                s = ''
+                for user in transactionDetails(t)['Usernames']:
+                    s = s + user+', '
+                if 'Possible fradulent transaction in $DESO Blockchain: Transaction ID:'+t not in posted:
+                    print('Possible fradulent transaction in $DESO Blockchain: Transaction ID:', t)
+                    post('Possible fradulent transaction in $DESO Blockchain: Transaction ID:' + t + ' Participants: '+ s)
+                    posted.add('Possible fradulent transaction in $DESO Blockchain: Transaction ID:' + t)
+                time.sleep(3)
+        time.sleep(10)
+    #print(transactionDetails("3JuETDb8fDqmttC9HXw4bTwv2gbTTzYCpbArpuWb4iFt5EQuyr62xf"))
 
 
