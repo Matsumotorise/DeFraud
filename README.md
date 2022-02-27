@@ -12,7 +12,6 @@
 ## For webapp
 * Unzip webapp: https://drive.google.com/file/d/1vCnB2SXaZybu9Gg7yjs4OJGBaYTFme1N/view?usp=sharing
 * npm install
-* python ./
 * python ./backend/testFlask.py
 
 ## For bot deployment
